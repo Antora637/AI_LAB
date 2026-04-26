@@ -12,25 +12,6 @@ void dfs(int i, int v, vector<vector<int>> &adj_mat, vector<bool> &visited)
     }
 }
 
-void bfs(int i, int v, vector<vector<int>> &adj_mat, vector<bool> &visited){
-    queue<int> Q;
-    Q.push(i);
-
-    while(!Q.empty()){
-        int u = Q.front();
-        cout << u << " ";
-        Q.pop();
-        visited[u] = true;
-
-        for(auto j : adj_mat[u]) {
-            if(!visited[j]){
-                visited[j] = true;
-                Q.push(j);
-            }
-        }
-    }
-}
-
 int main()
 {
     int v, e;
@@ -46,5 +27,5 @@ int main()
         adj_mat[w].push_back(u);
     }
     
-    bfs(0, v, adj_mat, visited);
+    dfs(0, v, adj_mat, visited);
 }
