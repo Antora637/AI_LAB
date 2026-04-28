@@ -1,14 +1,14 @@
 #include <iostream>
 using namespace std;
 
-int G[21][21], visited[21], n;
+int G[20][20], visited[20], n;
 
 void DFS(int i)
 {
-    cout << i << " ";
+    cout << i << "\t";
     visited[i] = 1;
 
-    for (int j = 1; j <= n; j++)
+    for (int j = 0; j < n; j++)
     {
         if (G[i][j] == 1 && !visited[j])
         {
@@ -19,39 +19,23 @@ void DFS(int i)
 
 int main()
 {
+    int start;
+
     cout << "Enter number of vertices: ";
     cin >> n;
 
-    if (n > 20 || n < 1)
-    {
-        cout << "Invalid number of vertices!";
-        return 0;
-    }
-
     cout << "Enter adjacency matrix:\n";
-
-    for (int i = 1; i <= n; i++)
+    for (int i = 0; i < n; i++)
     {
         visited[i] = 0;
-    }
-
-    for (int i = 1; i <= n; i++)
-    {
-        for (int j = 1; j <= n; j++)
+        for (int j = 0; j < n; j++)
         {
             cin >> G[i][j];
         }
     }
 
-    int start;
     cout << "Enter starting vertex: ";
     cin >> start;
-
-    if (start < 1 || start > n)
-    {
-        cout << "Invalid starting vertex!";
-        return 0;
-    }
 
     cout << "\nDFS Traversal:\n";
     DFS(start);
