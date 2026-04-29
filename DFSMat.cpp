@@ -1,18 +1,18 @@
 #include <iostream>
 using namespace std;
 
-int G[20][20], visited[20], n;
+int a[21][21], visited[21] = {0}, n;
 
-void DFS(int i)
+void dfs(int v)
 {
-    cout << i << "\t";
-    visited[i] = 1;
+    cout << v << "\t";   // visit node
+    visited[v] = 1;
 
-    for (int j = 0; j < n; j++)
+    for (int i = 1; i <= n; i++)
     {
-        if (G[i][j] == 1 && !visited[j])
+        if (a[v][i] == 1 && visited[i] == 0)
         {
-            DFS(j);
+            dfs(i);   // recursive call
         }
     }
 }
@@ -24,21 +24,26 @@ int main()
     cout << "Enter number of vertices: ";
     cin >> n;
 
-    cout << "Enter adjacency matrix:\n";
-    for (int i = 0; i < n; i++)
+    cout << "Enter graph data in matrix form:\n";
+    for (int i = 1; i <= n; i++)
     {
-        visited[i] = 0;
-        for (int j = 0; j < n; j++)
+        for (int j = 1; j <= n; j++)
         {
-            cin >> G[i][j];
+            cin >> a[i][j];
         }
     }
 
     cout << "Enter starting vertex: ";
     cin >> start;
 
-    cout << "\nDFS Traversal:\n";
-    DFS(start);
+    if (start < 1 || start > n)
+    {
+        cout << "Invalid starting vertex!\n";
+        return 0;
+    }
+
+    cout << "\nDFS traversal:\n";
+    dfs(start);
 
     return 0;
 }
