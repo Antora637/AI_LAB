@@ -7,13 +7,13 @@ bool visited[20];
 
 int minCost = 999999;
 
-// path tracking
 int path[20];
-int bestPath[100][20];
+int bestPath[1000][20];
 int pathCount = 0;
 
 void tsp(int city, int count, int currentCost)
 {
+    // Base case: all cities visited
     if(count == n)
     {
         if(cost[city][0] != 0)
@@ -24,15 +24,11 @@ void tsp(int city, int count, int currentCost)
             if(totalCost < minCost)
             {
                 minCost = totalCost;
-                pathCount = 0;
-
-                for(int i = 0; i < n; i++)
-                    bestPath[pathCount][i] = path[i];
-
-                pathCount++;
+                pathCount = 0; // reset old paths
             }
-            // same minimum found
-            else if(totalCost == minCost)
+
+            // store path if equal or new min
+            if(totalCost == minCost)
             {
                 for(int i = 0; i < n; i++)
                     bestPath[pathCount][i] = path[i];
@@ -43,6 +39,7 @@ void tsp(int city, int count, int currentCost)
         return;
     }
 
+    // try all next cities
     for(int i = 0; i < n; i++)
     {
         if(!visited[i] && cost[city][i] != 0)
@@ -52,7 +49,7 @@ void tsp(int city, int count, int currentCost)
 
             tsp(i, count + 1, currentCost + cost[city][i]);
 
-            visited[i] = false; // backtrack
+            visited[i] = false; // backtracking
         }
     }
 }
@@ -79,19 +76,19 @@ int main()
 
     tsp(0, 1, 0);
 
-    cout << "\nMinimum cost = " << minCost << endl;
+    cout << "\nMinimum Cost = " << minCost << endl;
 
-    cout << "\nPaths with minimum cost:\n";
-
+    cout << "\nAll Minimum Cost Paths:\n";
     for(int i = 0; i < pathCount; i++)
     {
         for(int j = 0; j < n; j++)
         {
             cout << char('A' + bestPath[i][j]) << " -> ";
         }
-        cout << char('A' + 0); // return to start
-        cout << endl;
+        cout << "A" << endl;
     }
+
+    cout << "\nTotal minimum paths = " << pathCount << endl;
 
     return 0;
 }
