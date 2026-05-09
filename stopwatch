@@ -1,0 +1,46 @@
+// Common Anode 7-segment array (0-9)
+unsigned char array[] = {0xC0, 0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82, 0xF8, 0x80, 0x90};
+
+unsigned char count = 0;
+short running = 0;
+
+void main() {
+    TRISB = 0x00;     // Segment output
+    TRISD.F0 = 1;     // Start button
+    TRISD.F1 = 1;     // Stop button
+    TRISC.F0 = 0;     // Common pin output
+
+    PORTC.F0 = 1;     // Enable display (as per CA)
+
+    PORTB = array[count];
+
+    while(1) {
+
+        // START button
+        if (PORTD.F0 == 1) {
+            Delay_ms(30);
+            if (PORTD.F0 == 1) {
+                running = 1;
+            }
+            while(PORTD.F0 == 1); // wait release
+        }
+
+        // STOP button
+        if (PORTD.F1 == 1) {
+            Delay_ms(30);
+            if (PORTD.F1 == 1) {
+                running = 0;
+            }
+            while(PORTD.F1 == 1); // wait release
+        }
+
+        // Counter run
+        if (running == 1) {
+            PORTB = array[count];
+            Delay_ms(500);
+
+            count++;
+            if (count > 9) count = 0;
+        }
+    }
+}

@@ -1,0 +1,36 @@
+unsigned char MSDelay(unsigned char Time)
+{
+    unsigned char y, z;
+    for(y = 0; y < Time; y++)
+        for(z = 0; z < 20; z++);
+}
+
+unsigned char Y[8] =
+{
+    0x80,  // 10000000
+    0x40,  // 01000000
+    0x20,  // 00100000
+    0x1E,  // 00011110
+    0x1E,  // 00011110
+    0x20,  // 00100000
+    0x40,  // 01000000
+    0x80   // 10000000
+};
+
+void main()
+{
+    TRISC = 0x00;
+    TRISD = 0x00;
+
+    while(1)
+    {
+        PORTD = 0x80; PORTC = Y[0]; MSDelay(10);
+        PORTD = 0x40; PORTC = Y[1]; MSDelay(10);
+        PORTD = 0x20; PORTC = Y[2]; MSDelay(10);
+        PORTD = 0x10; PORTC = Y[3]; MSDelay(10);
+        PORTD = 0x08; PORTC = Y[4]; MSDelay(10);
+        PORTD = 0x04; PORTC = Y[5]; MSDelay(10);
+        PORTD = 0x02; PORTC = Y[6]; MSDelay(10);
+        PORTD = 0x01; PORTC = Y[7]; MSDelay(10);
+    }
+}

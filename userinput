@@ -1,0 +1,114 @@
+#define digitL PORTC.F0
+#define digitR PORTC.F1
+
+unsigned char arrayca[] = {
+    0xC0,0xF9,0xA4,0xB0,0x99,
+    0x92,0x82,0xF8,0x80,0x90
+};
+
+unsigned char bt_zero = 0, bt_one = 0;
+unsigned char fromIndex = 0;
+unsigned char m = 0;
+unsigned char confirmStep = 0;   // 0=set, 1=ready to count
+
+unsigned char i;
+
+void display(unsigned char num) {
+
+    unsigned char L = num / 10;
+    unsigned char R = num % 10;
+
+    for(i = 0; i < 40; i++) {
+
+        PORTB = arrayca[L];
+        digitL = 1; digitR = 0;
+        Delay_ms(5);
+        digitL = 0;
+
+        PORTB = arrayca[R];
+        digitR = 1; digitL = 0;
+        Delay_ms(5);
+        digitR = 0;
+    }
+}
+
+void main() {
+
+    TRISB = 0x00;
+    TRISC = 0x00;
+
+    TRISD.F0 = 1;   // tens
+    TRISD.F1 = 1;   // units
+    TRISD.F7 = 1;   // start button
+
+    PORTB = 0xFF;
+    PORTC = 0x00;
+
+    while(1) {
+
+        // -------------------------
+        // SET FROM VALUE (2 buttons)
+        // -------------------------
+        if(confirmStep == 0) {
+
+            // Tens button
+            if(PORTD.F0 == 1) {
+                Delay_ms(30);
+                if(PORTD.F0 == 1) {
+                    bt_zero++;
+                    if(bt_zero > 9) bt_zero = 0;
+                    while(PORTD.F0 == 1);
+                }
+            }
+
+            // Units button
+            if(PORTD.F1 == 1) {
+                Delay_ms(30);
+                if(PORTD.F1 == 1) {
+                    bt_one++;
+                    if(bt_one > 9) bt_one = 0;
+                    while(PORTD.F1 == 1);
+                }
+            }
+        }
+
+        // -------------------------
+        // START BUTTON (RD7)
+        // -------------------------
+        if(PORTD.F7 == 1) {
+            Delay_ms(30);
+            if(PORTD.F7 == 1) {
+
+                if(confirmStep == 0) {
+                    fromIndex = bt_zero * 10 + bt_one;
+                    m = fromIndex;
+                    confirmStep = 1;
+                }
+
+                while(PORTD.F7 == 1);
+            }
+        }
+
+        // -------------------------
+        // COUNT MODE
+        // -------------------------
+        if(confirmStep == 1) {
+
+            display(m);
+
+            m++;
+
+            // ?? FIX: 99 ?? ??? ???? fromIndex
+            if(m > 99) {
+                m = fromIndex;
+            }
+        }
+
+        // -------------------------
+        // IDLE DISPLAY (before start)
+        // -------------------------
+        else {
+            display(bt_zero * 10 + bt_one);
+        }
+    }
+}
