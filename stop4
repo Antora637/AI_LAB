@@ -1,0 +1,95 @@
+// Segment patterns for Common Anode (0-9)
+// 0 = ON, 1 = OFF. Bit 7 is DP (Decimal Point)
+unsigned char seg[] = {0xC0, 0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82, 0xF8, 0x80, 0x90};
+
+unsigned int ms_ticks = 0;
+unsigned short sec = 0, min = 0, running = 0;
+unsigned char d1, d2, d3, d4;
+
+// Function to update digit variables
+void calc_digits() {
+    d1 = min / 10;   // Tens of minutes
+    d2 = min % 10;   // Units of minutes
+    d3 = sec / 10;   // Tens of seconds
+    d4 = sec % 10;   // Units of seconds
+}
+
+// Timer1 Interrupt: Triggers every 10ms for accuracy
+void Interrupt() {
+    if (TMR1IF_bit) {
+        // Preload for 10ms at 8MHz (Fosc/4, Prescaler 1:1)
+        // 65536 - 20000 = 45536 (0xB1E0)
+        TMR1H = 0xB1;
+        TMR1L = 0xE0;
+
+        if (running) {
+            ms_ticks++;
+            if (ms_ticks >= 100) { // 100 * 10ms = 1 Second
+                ms_ticks = 0;
+                sec++;
+                if (sec >= 60) {
+                    sec = 0;
+                    min++;
+                    if (min >= 60) min = 0;
+                }
+                calc_digits();
+            }
+        }
+        TMR1IF_bit = 0;
+    }
+}
+
+void main() {
+    // Port Initializations
+    ADCON1 = 0x07;      // All pins digital
+    TRISB = 0x00;       // PORTB as Output (Segments)
+    TRISC = 0xF0;       // RC0-RC3 as Output (Digit Select)
+    TRISD = 0x03;       // RD0, RD1 as Input (Buttons)
+
+    PORTB = 0xFF;       // Clear segments (OFF for Common Anode)
+    PORTC = 0x00;       // Clear digits
+
+    // Timer1 Setup (10ms @ 8MHz)
+    T1CON = 0x01;       // Prescaler 1:1, Timer1 ON
+    TMR1H = 0xB1;
+    TMR1L = 0xE0;
+    TMR1IE_bit = 1;     // Enable Timer1 Interrupt
+    GIE_bit = 1;        // Global Interrupt Enable
+    PEIE_bit = 1;       // Peripheral Interrupt Enable
+
+    calc_digits();
+
+    while(1) {
+        // --- BUTTON LOGIC ---
+        // Start/Pause (RD0) - Active Low
+        if (Button(&PORTD, 0, 50, 0)) {
+            running = !running;
+            while (RD0_bit == 0); // Wait for release (Debounce)
+        }
+
+        // Reset (RD1) - Active Low
+        if (Button(&PORTD, 1, 50, 0)) {
+            running = 0;
+            sec = 0; min = 0; ms_ticks = 0;
+            calc_digits();
+            while (RD1_bit == 0); // Wait for release
+        }
+
+        // --- MULTIPLEXING DISPLAY ---
+        // Digit 1
+        PORTB = seg[d1];
+        RC0_bit = 1; Delay_ms(2); RC0_bit = 0;
+
+        // Digit 2 (With Decimal Point for 00:00 separator)
+        PORTB = seg[d2] & 0x7F;
+        RC1_bit = 1; Delay_ms(2); RC1_bit = 0;
+
+        // Digit 3
+        PORTB = seg[d3];
+        RC2_bit = 1; Delay_ms(2); RC2_bit = 0;
+
+        // Digit 4
+        PORTB = seg[d4];
+        RC3_bit = 1; Delay_ms(2); RC3_bit = 0;
+    }
+}
